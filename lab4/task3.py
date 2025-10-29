@@ -9,7 +9,7 @@ class RC5:
         self.w8 = w // 8
         self.w4 = self.w8 * 2
         self.mod = 2 ** self.w
-        self.mask = self.mod - 1
+        self.mask = self.mod - 1 
         self.b = len(self.key)
 
         self.__keyAlign()
