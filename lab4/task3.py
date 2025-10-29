@@ -1,14 +1,13 @@
 class RC5:
 
     def __init__(self, w, R, key, strip_extra_nulls=False):
-        self.w = w  # word size in bits (16,32,64)
-        self.R = R  # number of rounds (0..255)
+        self.w = w
+        self.R = R
         self.key = key if isinstance(key, (bytes, bytearray)) else bytes(key)
         self.strip_extra_nulls = strip_extra_nulls
-        # some useful constants
         self.T = 2 * (R + 1)
-        self.w8 = w // 8  # bytes per word
-        self.w4 = self.w8 * 2  # bytes per block (2 words)
+        self.w8 = w // 8
+        self.w4 = self.w8 * 2
         self.mod = 2 ** self.w
         self.mask = self.mod - 1
         self.b = len(self.key)
@@ -25,9 +24,9 @@ class RC5:
         n %= self.w
         return ((val & self.mask) >> n) | (val << (self.w - n) & self.mask)
 
-    def __const(self):  # constants generation
+    def __const(self):
         if self.w == 16:
-            return 0xB7E1, 0x9E37  # return P, Q values
+            return 0xB7E1, 0x9E37
         elif self.w == 32:
             return 0xB7E15163, 0x9E3779B9
         elif self.w == 64:
@@ -36,12 +35,12 @@ class RC5:
             raise ValueError("Unsupported word size")
 
     def __keyAlign(self):
-        if self.b == 0:  # key is empty
+        if self.b == 0:
             self.c = 1
             self.key = b'\x00' * self.w8
             self.b = len(self.key)
         elif self.b % self.w8:
-            self.key += b'\x00' * (self.w8 - self.b % self.w8)  # fill key with \x00 bytes
+            self.key += b'\x00' * (self.w8 - self.b % self.w8)
             self.b = len(self.key)
             self.c = self.b // self.w8
         else:
@@ -134,11 +133,9 @@ class RC5:
 
         block_size = self.w4
         padded = self.__pad_md_style(data)
-        H = b'\x00' * block_size  # IV (zeros)
-        # iterate blocks
+        H = b'\x00' * block_size
         for off in range(0, len(padded), block_size):
             m = padded[off:off + block_size]
-            # use message block as key (Davies–Meyer)
             rc = RC5(self.w, self.R, key=m)
             E = rc.encryptBlock(H)
             H = self.__xor_bytes(E, H)
